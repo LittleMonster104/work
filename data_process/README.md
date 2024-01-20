@@ -7,10 +7,24 @@ The code has been tested running under Python 3.9.12. The required packages are 
 - torch == 1.13.1
 - openpyxl == 3.1.2
 
-### 情感分析模型
+### 文本情绪分类模型
+SA.py  
+
 输入：评论列表，类型list  
 
 输出：列表中情感占比的最大项，及其所占比例
+
+### 被动反馈数据
+数据输入为beishi文件夹下面的数据  
+
+1.运行excel_process.py进行数据预处理，生成resource.xlsx文件
+```
+python excel_process.py
+```
+2.运行resource_scoring.py对数据进行归一化处理，根据CRITIC权重计算综合评分，生成score.xlsx文件
+```
+python resource_scoring.py
+```
 
 ### CRITIC权重
 CRITIC权重法是一种基于数据波动性和冲突性的客观赋权方法。它涉及两个关键指标：  
