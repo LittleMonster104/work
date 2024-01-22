@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import glob
 import openpyxl.utils.exceptions as excel_exceptions
 
@@ -31,6 +32,7 @@ for file in file_list:
     data = pd.read_excel(file)
     Buried_data = pd.concat([Buried_data, data], ignore_index=True)
 # print(Buried_data)
+
 # 统计每个资源被评价的次数
 comment = pd.read_excel('beishi/资源埋点数据.xlsx', sheet_name='用户的评价内容')
 comment = comment.groupby('资源ID').size().reset_index(name='资源被评价次数')
@@ -83,6 +85,76 @@ resource['资源被访问时长'].fillna(0, inplace=True)
 for col in resource_all.columns:
     resource[col] = resource_all[col].apply(clean_string)
 # 将 DataFrame 写入 Excel 文件，如果还有非法字符，会被替换为空字符串
+
+# 对预处理好的数据进行归一化处理
+# 设置基础评分和对数转换的底数
+base_score = 1
+log_base = 2  # 以2为底的对数转换
+
+# 对单个用户观看资源中心内容的次数不为零的资源进行对数转换和归一化
+non_zero_views = resource[resource['单个用户观看资源中心内容的次数'] != 0]['单个用户观看资源中心内容的次数']
+resource.loc[resource['单个用户观看资源中心内容的次数'] != 0, '单个用户观看资源中心内容的次数'] = base_score + np.log(non_zero_views) / np.log(log_base)
+max_score = resource['单个用户观看资源中心内容的次数'].max()
+min_score = resource['单个用户观看资源中心内容的次数'].min()
+resource.loc[resource['单个用户观看资源中心内容的次数'] != 0, '单个用户观看资源中心内容的次数'] = (resource['单个用户观看资源中心内容的次数'] - min_score) / (max_score - min_score)
+resource.loc[resource['单个用户观看资源中心内容的次数'] == 0, '单个用户观看资源中心内容的次数'] = 0
+
+
+# 对点击收藏的次数不为零的资源进行对数转换和归一化
+non_zero_views = resource[resource['点击收藏的次数'] != 0]['点击收藏的次数']
+resource.loc[resource['点击收藏的次数'] != 0, '点击收藏的次数'] = base_score + np.log(non_zero_views) / np.log(log_base)
+max_score = resource['点击收藏的次数'].max()
+min_score = resource['点击收藏的次数'].min()
+resource.loc[resource['点击收藏的次数'] != 0, '点击收藏的次数'] = (resource['点击收藏的次数'] - min_score) / (max_score - min_score)
+resource.loc[resource['点击收藏的次数'] == 0, '点击收藏的次数'] = 0
+
+
+# 对点击点赞的次数不为零的资源进行对数转换和归一化
+non_zero_views = resource[resource['点击点赞的次数'] != 0]['点击点赞的次数']
+resource.loc[resource['点击点赞的次数'] != 0, '点击点赞的次数'] = base_score + np.log(non_zero_views) / np.log(log_base)
+max_score = resource['点击点赞的次数'].max()
+min_score = resource['点击点赞的次数'].min()
+resource.loc[resource['点击点赞的次数'] != 0, '点击点赞的次数'] = (resource['点击点赞的次数'] - min_score) / (max_score - min_score)
+# 对点击点赞的次数为零的资源直接将评分置为0
+resource.loc[resource['点击点赞的次数'] == 0, '点击点赞的次数'] = 0
+
+
+# 对用户查看元数据的次数不为零的资源进行对数转换和归一化
+non_zero_views = resource[resource['用户查看元数据的次数'] != 0]['用户查看元数据的次数']
+resource.loc[resource['用户查看元数据的次数'] != 0, '用户查看元数据的次数'] = base_score + np.log(non_zero_views) / np.log(log_base)
+max_score = resource['用户查看元数据的次数'].max()
+min_score = resource['用户查看元数据的次数'].min()
+resource.loc[resource['用户查看元数据的次数'] != 0, '用户查看元数据的次数'] = (resource['用户查看元数据的次数'] - min_score) / (max_score - min_score)
+# 对用户查看元数据的次数为零的资源直接将评分置为0
+resource.loc[resource['用户查看元数据的次数'] == 0, '用户查看元数据的次数'] = 0
+
+
+non_zero_views = resource[resource['用户基于SKN网络查看用户的次数'] != 0][
+    '用户基于SKN网络查看用户的次数']
+resource.loc[resource['用户基于SKN网络查看用户的次数'] != 0, '用户基于SKN网络查看用户的次数'] = base_score + np.log(non_zero_views) / np.log(log_base)
+max_score = resource['用户基于SKN网络查看用户的次数'].max()
+min_score = resource['用户基于SKN网络查看用户的次数'].min()
+resource.loc[resource['用户基于SKN网络查看用户的次数'] != 0, '用户基于SKN网络查看用户的次数'] = (resource['用户基于SKN网络查看用户的次数'] - min_score) / (max_score - min_score)
+resource.loc[resource['用户基于SKN网络查看用户的次数'] == 0, '用户基于SKN网络查看用户的次数'] = 0
+
+
+non_zero_views = resource[resource['资源被评价次数'] != 0]['资源被评价次数']
+resource.loc[resource['资源被评价次数'] != 0, '资源被评价次数'] = base_score + np.log(non_zero_views) / np.log(log_base)
+max_score = resource['资源被评价次数'].max()
+min_score = resource['资源被评价次数'].min()
+resource.loc[resource['资源被评价次数'] != 0, '资源被评价次数'] = (resource['资源被评价次数'] - min_score) / (max_score - min_score)
+resource.loc[resource['资源被评价次数'] == 0, '资源被评价次数'] = 0
+
+
+# 访问时间以秒为单位
+non_zero_views = resource[resource['资源被访问时长'] != 0]['资源被访问时长']
+resource.loc[resource['资源被访问时长'] != 0, '资源被访问时长'] = base_score + np.log(non_zero_views) / np.log(log_base)
+max_score = resource['资源被访问时长'].max()
+min_score = resource['资源被访问时长'].min()
+resource.loc[resource['资源被访问时长'] != 0, '资源被访问时长'] = (resource['资源被访问时长'] - min_score) / (max_score - min_score)
+resource.loc[resource['资源被访问时长'] == 0, '资源被访问时长'] = 0
+
+
 try:
     resource.to_excel('resource.xlsx', index=False)
     resource.to_csv('resource.csv', index=False)
