@@ -4,7 +4,7 @@ import tqdm
 from transformers import T5Tokenizer, AutoModelForSeq2SeqLM
 
 # model_name = "yuyijiong/T5-large-sentiment-analysis-Chinese-MultiTask"
-model_name = "./model2"
+model_name = "./model"
 
 
 def SA_func(text: str):
